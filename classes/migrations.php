@@ -52,14 +52,51 @@ class Migrations
   }
 
   
-  public function generate_new_migration_file($name)
+  public function generate_new_migration_file($name, $up = '', $down = '')
   {
     $template = file_get_contents(Kohana::find_file('templates', 'migration', 'tpl'));
     $class_name = str_replace(' ','_',ucwords(str_replace('_',' ',$name)));
     $filename = sprintf("%d_$name.php", time());
 
-    file_put_contents($this->config['path'].DIRECTORY_SEPARATOR.$filename, strtr($template, array('{up}' => '', '{down}' => '', '{class_name}' => $class_name)));   
+    file_put_contents($this->config['path'].DIRECTORY_SEPARATOR.$filename, strtr($template, array('{up}' => $up, '{down}' => $down, '{class_name}' => $class_name)));   
     return $filename;
+  }
+  
+  public function generate_from_existing_schema()
+  {
+	// Iterate over tables.
+	$tables = $this->driver->get_tables();
+	$up = '';
+	$down = '';
+	foreach($tables as $table_name => $columns)
+	{
+		$up .= "\t\t".'$this->create_table("'.$table_name.'", array('."\n";
+		
+		foreach($columns as $column_name => $params)
+		{
+			$up .= "\t\t\t'{$column_name}' => array(";
+			foreach($params as $name => $value)
+			{
+				if($name != '0') {
+					$up .= "'{$name}' => '{$value}',";
+				} else {
+					$up .= "'{$value}',";
+				}
+			}
+			$up .= "),\n";
+		}
+		$up .= "\t\t));\n\n";
+		
+		$down .= "\t\t".'$this->drop_table("'.$table_name.'");'."\n";
+	}
+	
+	$filename = $this->generate_new_migration_file("create_base_tables", $up, $down);
+	Command::log(Command::colored('Generated migration '.$filename));
+	// Iterate over indexes.
+	$indexes = $this->driver->get_indexes();
+	// Iterate over foreign keys
+	$fks = $this->driver->get_fks();
+	// Load data.  Iterate over tables
   }
   
   /**

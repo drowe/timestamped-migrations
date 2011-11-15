@@ -258,5 +258,10 @@ It will prompt before preceeding.";
 
 		self::log(self::colored($this->migrations->generate_new_migration_file($name), Command::OK).self::colored(' Migration File Generated', Command::WARNING));
 	}
-
+	
+	const GENERATE_EXISTING_BRIEF = "Build migrations from existing database structure";
+	public function generate_existing()
+	{
+		self::log(self::colored($this->migrations->generate_from_existing_schema(), Command::OK).self::colored(' Migrations generated from existing schema', Command::WARNING));
+	}
 }

@@ -60,4 +60,9 @@ abstract class Migration_Driver
 	abstract public function remove_column($table_name, $column_name);
 	abstract public function add_index($table_name, $index_name, $columns, $index_type = 'normal');
 	abstract public function remove_index($table_name, $index_name);
+    abstract public function add_fk($local_table, $local_column, $foreign_table, $foreign_column, $on_delete = '', $on_update = '', $fk_name);
+	abstract public function get_tables();
+	abstract public function get_indexes();
+	abstract public function get_fks();
+	abstract public function get_data($table_name);
 }

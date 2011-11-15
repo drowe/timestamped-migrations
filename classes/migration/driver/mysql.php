@@ -188,6 +188,19 @@ class Migration_Driver_Mysql extends Migration_Driver
 		$this->pdo->exec("ALTER TABLE `$table_name` DROP INDEX `$index_name`");
 		return $this;
 	}
+    
+    public function add_fk($local_table, $local_column, $foreign_table, $foreign_column = 'id', $on_delete = '', $on_update = '', $fk_name)
+    {
+        $sql = "ALTER TABLE `$local_table` ADD CONSTRAINT FOREIGN KEY `FK_{$local_table}_{$local_column}_{$foreign_table}_{$foreign_column}` (`{$local_column}`) REFERENCES `{$foreign_table}` (`{$foreign_column}`)";
+        $this->pdo->exec($sql);
+        return $this;
+    }
+    
+    public function drop_fk($table, $fk_name)
+    {
+        $this->pdo->exec("ALTER TABLE `$table` DROP FOREIGN KEY `$fk_name`");
+		return $this;
+    }
 	
 	protected function compile_column($field_name, $params, $allow_order = FALSE)
 	{
@@ -356,5 +369,37 @@ class Migration_Driver_Mysql extends Migration_Driver
 		}
 		
 		return $native . (isset($limit) ? "[$limit]" : '');
+	}
+	
+	public function get_tables()
+	{
+		$ret_val = array();
+		$table_result = $this->pdo->query('SHOW TABLES;');
+		while($row = $table_result->fetch(PDO::FETCH_BOTH)) {
+			$col_result = $this->pdo->query("DESC {$row[0]}");
+			$table_cols = array();
+			while($col_row = $col_result->fetchObject()) {
+				$table_cols[$col_row->Field] = $this->get_column($row[0], $col_row->Field);
+			}
+			
+			$ret_val[$row[0]] = $table_cols;
+		}
+		
+		return $ret_val;
+	}
+	
+	public function get_indexes()
+	{
+		
+	}
+	
+	public function get_fks()
+	{
+		
+	}
+	
+	public function get_data($table_name)
+	{
+		
 	}
 }

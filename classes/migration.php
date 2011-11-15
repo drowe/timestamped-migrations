@@ -220,4 +220,34 @@ abstract class Migration
 		return $this->run_driver("remove_index( $table_name, $index_name )", __FUNCTION__, $args);
 	}
 	
+    
+    /**
+     * Add a foreign key
+     *
+     * @param string Name of local table
+     * @param string Name of local column
+     * @param string Name of foreign table
+     * @param string Name of foreign column
+     * @param string Operation ON DELETE
+     * @param string Operation ON CASCADE
+     * @param string Name of ForeignKey Index
+     * @return bool
+     */
+    public function add_fk($local_table, $local_column, $foreign_table, $foreign_column = 'id', $on_delete = '', $on_update = '', $fk_name = null)
+    {
+        $args = func_get_args();
+        return $this->run_driver("add_fk( $local_table, $local_column, $foreign_table, $foreign_column, $on_delete, $on_update, $fk_name )", __FUNCTION__, $args);
+    }
+    
+    /**
+     * Drop a foreign key
+     * @param string Name of the table
+     * @param string Name of the FK
+     * @return bool
+     */
+    public function drop_fk($table, $fk_name = null)
+    {
+        $args = func_get_args();
+        return $this->run_driver("drop_fk( $table, $fk_name )", __FUNCTION__, $args);
+    }
 }
