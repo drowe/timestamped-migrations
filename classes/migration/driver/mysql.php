@@ -390,7 +390,27 @@ class Migration_Driver_Mysql extends Migration_Driver
 	
 	public function get_indexes()
 	{
+		$ret_val = array();
+		$tables = $this->get_tables();
+		foreach($tables as $table_name => $columns)
+		{
+			$indexes = $this->pdo->query("SHOW INDEX FROM {$table_name}");
+			while($row = $indexes->fetchObject())
+			{
+				if(!isset($ret_val[$table_name])) {
+					$ret_val[$table_name] = array();
+				}
+				
+				if(!isset($ret_val[$table_name][$row->Key_name]))
+				{
+					$ret_val[$table_name][$row->Key_name] = array();
+				}
+				
+				$ret_val[$table_name][$row->Key_name][] = '"'.$row->Column_name.'"';
+			}
+		}
 		
+		return $ret_val;
 	}
 	
 	public function get_fks()

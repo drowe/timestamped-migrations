@@ -65,11 +65,13 @@ class Migrations
   public function generate_from_existing_schema()
   {
 	// Iterate over tables.
+	Command::log(Command::colored('Generating migrations for existing tables...'));
 	$tables = $this->driver->get_tables();
 	$up = '';
 	$down = '';
 	foreach($tables as $table_name => $columns)
 	{
+		Command::log($table_name);
 		$up .= "\t\t".'$this->create_table("'.$table_name.'", array('."\n";
 		
 		foreach($columns as $column_name => $params)
@@ -92,11 +94,31 @@ class Migrations
 	
 	$filename = $this->generate_new_migration_file("create_base_tables", $up, $down);
 	Command::log(Command::colored('Generated migration '.$filename));
+	sleep(1);
+	
+	$up = '';
+	$down = '';
 	// Iterate over indexes.
-	$indexes = $this->driver->get_indexes();
+	$table_indexes = $this->driver->get_indexes();
+	foreach($table_indexes as $table_name => $indexes)
+	{
+		foreach($indexes as $index_name => $columns)
+		{
+			if(strcasecmp($index_name, 'PRIMARY') == 0) {
+				continue;
+			}
+			$up .= "\t\t".'$this->add_index("'.$table_name.'", "'.$index_name.'", array('.join(',', $columns)."));\n";
+			$down .= "\t\t".'$this->remove_index("'.$table_name.'", "'.$index_name.'");'."\n";
+		}
+	}
+	
+	$filename = $this->generate_new_migration_file("create_base_indexes", $up, $down);
+	Command::log(Command::colored('Generated migration '.$filename));
+	
 	// Iterate over foreign keys
 	$fks = $this->driver->get_fks();
 	// Load data.  Iterate over tables
+	
   }
   
   /**
